@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+
+	"cloud.google.com/go/firestore"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/thoughtgears/heimdall/internal/config"
-	"github.com/thoughtgears/heimdall/internal/gcp"
 	"github.com/thoughtgears/heimdall/internal/router"
 )
 
@@ -20,9 +22,9 @@ func main() {
 		log.Fatal().Err(err).Msg("config.New()")
 	}
 
-	client, err := gcp.New(cfg.Project)
+	client, err := firestore.NewClient(context.Background(), cfg.Project)
 	if err != nil {
-		log.Fatal().Err(err).Msg("gcp.New(projectId)")
+		log.Fatal().Err(err).Msg("firestore.NewClient(projectId)")
 	}
 
 	r := router.New(client, cfg)

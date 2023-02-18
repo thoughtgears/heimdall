@@ -6,3 +6,6 @@
 .idea/**/shelf
 
 gha-creds-*.json
+
+.env
+data

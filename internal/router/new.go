@@ -1,15 +1,16 @@
 package router
 
 import (
+	"net/http"
+
+	"cloud.google.com/go/firestore"
 	ginzerolog "github.com/dn365/gin-zerolog"
 	"github.com/gin-gonic/gin"
-	"github.com/thoughtgears/heimdall/handlers"
+	"github.com/thoughtgears/heimdall/handlers/project"
 	"github.com/thoughtgears/heimdall/internal/config"
-	"github.com/thoughtgears/heimdall/internal/gcp"
-	"net/http"
 )
 
-func New(client *gcp.Client, config *config.Config) *gin.Engine {
+func New(client *firestore.Client, config *config.Config) *gin.Engine {
 	if !config.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -24,7 +25,8 @@ func New(client *gcp.Client, config *config.Config) *gin.Engine {
 	v1 := r.Group("/v1")
 
 	// Project endpoints
-	v1.GET("/project", handlers.GetAll(client, config))
+	v1.GET("/project", project.GetAll(client, config))
+	v1.GET("/project/:id", project.GetID(client, config))
 
 	return r
 }

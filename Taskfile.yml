@@ -14,11 +14,6 @@ vars:
     sh: echo {{.GIT_REPO}} | sed -e 's#/.*$##'
   GO_VERSION:
     sh: go version | awk '{ print $3 }' | sed s/go//
-  REPO_ABS_ROOT_PATH:
-    sh: git rev-parse --show-toplevel
-  RELATIVE_PATH_TO_ROOT:
-    sh: |
-      realpath --relative-to="$(pwd)" "{{.REPO_ABS_ROOT_PATH}}"
 
 
 tasks:
@@ -31,3 +26,9 @@ tasks:
     dir: infra/heimdall
     cmds:
       - pulumi preview
+
+  pulumi:up:
+    desc: Runs pulumi up on the heimdall infrastructure
+    dir: infra/heimdall
+    cmds:
+      - pulumi up

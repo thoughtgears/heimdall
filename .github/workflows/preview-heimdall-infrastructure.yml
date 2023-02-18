@@ -7,8 +7,8 @@ on:
 
 env:
   PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-  PULUMI_STACK_NAME: ${{ vars.STACK_NAME }}
-  GOOGLE_PROJECT: ${{ vars.GOOGLE_PROJECT }}
+  PULUMI_STACK_NAME: ${{ secrets.STACK_NAME }}
+  GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
   GIT_REPO: ${{ github.repository }}
   PULUMI_WORKING_DIRECTORY: ./infra/heimdall
 
@@ -24,8 +24,8 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: 'projects/${{ vars.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ vars.WORKLOAD_POOL }}/providers/${{ vars.WORKLOAD_PROVIDER }}'
-          service_account: 'pulumi@${{ vars.PROJECT_ID }}.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/${{ secrets.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ secrets.WORKLOAD_POOL }}/providers/${{ secrets.WORKLOAD_PROVIDER }}'
+          service_account: 'pulumi@${{ secrets.PROJECT_ID }}.iam.gserviceaccount.com'
 
       - name: Install Go
         uses: actions/setup-go@v3
@@ -38,7 +38,7 @@ jobs:
       - uses: pulumi/actions@v4
         with:
           command: preview
-          stack-name: ${{ env.PULUMI_STACK_NAME }}
+          stack-name: ${{ secrets.PULUMI_STACK_NAME }}
           work-dir: ${{ env.PULUMI_WORKING_DIRECTORY }}
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

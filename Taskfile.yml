@@ -1,0 +1,33 @@
+version: '3'
+
+dotenv: ['.env', '{{.ENV}}/.env.', '{{.HOME}}/.env']
+
+# Dynamic variables for the task runners
+vars:
+  GIT_COMMIT:
+    sh: git log -n 1 --format=%h
+  GIT_REPO:
+    sh: git config --get remote.origin.url | sed -e 's#^.*:##' -e 's#.git$##' -e 's#//github.com/*##'
+  GIT_REPO_NAME:
+    sh: echo {{.GIT_REPO}} | sed -e 's#^.*/##'
+  GIT_OWNER:
+    sh: echo {{.GIT_REPO}} | sed -e 's#/.*$##'
+  GO_VERSION:
+    sh: go version | awk '{ print $3 }' | sed s/go//
+  REPO_ABS_ROOT_PATH:
+    sh: git rev-parse --show-toplevel
+  RELATIVE_PATH_TO_ROOT:
+    sh: |
+      realpath --relative-to="$(pwd)" "{{.REPO_ABS_ROOT_PATH}}"
+
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  pulumi:preview:
+    desc: Runs pulumi preview on the heimdall infrastructure
+    dir: infra/heimdall
+    cmds:
+      - pulumi preview

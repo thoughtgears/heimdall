@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"github.com/thoughtgears/heimdall/handlers/service_cataloge"
+
 	"cloud.google.com/go/firestore"
 	ginzerolog "github.com/dn365/gin-zerolog"
 	"github.com/gin-gonic/gin"
@@ -25,8 +27,12 @@ func New(client *firestore.Client, config *config.Config) *gin.Engine {
 	v1 := r.Group("/v1")
 
 	// Project endpoints
-	v1.GET("/project", project.GetAll(client, config))
-	v1.GET("/project/:id", project.GetID(client, config))
+	v1.GET("/projects", project.GetAll(client, config))
+	v1.GET("/projects/:id", project.GetID(client, config))
+
+	// Service Catalogue endpoints
+	v1.GET("/catalogue", service_cataloge.Get(client))
+	v1.POST("/catalogue", service_cataloge.Post(client))
 
 	return r
 }

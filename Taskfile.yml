@@ -25,10 +25,16 @@ tasks:
     desc: Runs pulumi preview on the heimdall infrastructure
     dir: infra/heimdall
     cmds:
-      - pulumi preview
+      - GIT_REPO={{.GIT_REPO}} pulumi preview
+
 
   pulumi:up:
     desc: Runs pulumi up on the heimdall infrastructure
     dir: infra/heimdall
     cmds:
-      - pulumi up
+      - GIT_REPO={{.GIT_REPO}} pulumi up
+
+  dev:
+    desc: Run heimdall in dev mode
+    cmds:
+      - go run main.go

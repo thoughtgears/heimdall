@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -13,10 +14,10 @@ type Config struct {
 }
 
 func New() (*Config, error) {
-	var config *Config
+	var config Config
 	if err := envconfig.Process("", &config); err != nil {
 		return nil, fmt.Errorf("could not load config : %v", err)
 	}
 
-	return config, nil
+	return &config, nil
 }

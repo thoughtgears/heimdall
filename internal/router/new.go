@@ -32,7 +32,7 @@ func New(client *firestore.Client, config *config.Config) *gin.Engine {
 	v1.GET("/projects", project.GetAll(client, config))
 	v1.GET("/projects/:id", project.Get(client, config))
 	v1.POST("/projects", project.Post(client, config))
-	v1.PUT("/projects/:id")
+	v1.PUT("/projects/:id", project.Put(client, config))
 	v1.DELETE("/projects/:id", project.Delete(client, config))
 
 	// Service Catalogue endpoints
@@ -41,6 +41,7 @@ func New(client *firestore.Client, config *config.Config) *gin.Engine {
 
 	// Stack management endpoints
 	v1.POST("/stacks/:id", stack_management.Up(client, config))
+	v1.DELETE("/stacks/:id", stack_management.Delete(client, config))
 
 	return r
 }

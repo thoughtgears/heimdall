@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/thoughtgears/heimdall/models"
+
 	"github.com/thoughtgears/heimdall/internal/iac"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/thoughtgears/heimdall/internal/config"
-	"github.com/thoughtgears/heimdall/models"
 )
 
-func Up(client *firestore.Client, config *config.Config) gin.HandlerFunc {
+func Delete(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var data models.Project
 		id := c.Param("id")
@@ -36,10 +37,10 @@ func Up(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 		}
 
 		for _, env := range data.Environments {
-			if _, err := iac.Run(c, data, env, config, false); err != nil {
-				log.Error().Err(err).Msg("error updating environment stack")
+			if _, err := iac.Run(c, data, env, config, true); err != nil {
+				log.Error().Err(err).Msg("error deleting environment stack")
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"message": fmt.Sprintf("error updating environment : %v", err),
+					"message": fmt.Sprintf("error deleting environment stack : %v", err),
 				})
 				return
 			}

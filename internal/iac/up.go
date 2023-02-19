@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pulumi/pulumi/sdk/v3/go/auto/optdestroy"
+
 	"github.com/thoughtgears/heimdall/internal/config"
 	"github.com/thoughtgears/heimdall/models"
 
@@ -15,7 +17,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func Up(ctx context.Context, data models.Project, environment string, config *config.Config) (string, error) {
+func Run(ctx context.Context, data models.Project, environment string, config *config.Config, delete bool) (string, error) {
 	deploy := func(ctx *pulumi.Context) error {
 		// Ensure you have a proper suffix ID at the end of creating a project
 		projectSuffix, err := random.NewRandomInteger(ctx, "project_suffix", &random.RandomIntegerArgs{
@@ -65,6 +67,19 @@ func Up(ctx context.Context, data models.Project, environment string, config *co
 	_, err = s.Refresh(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to refresh stack : %v", err)
+	}
+
+	if delete {
+		// wire up our destroy to stream progress to stdout
+		stdoutStreamer := optdestroy.ProgressStreams(os.Stdout)
+
+		// destroy our stack and exit early
+		_, err := s.Destroy(ctx, stdoutStreamer)
+		if err != nil {
+			return "", fmt.Errorf("failed to destroy stack : %v", err)
+		}
+
+		return "", nil
 	}
 
 	// wire up our update to stream progress to stdout

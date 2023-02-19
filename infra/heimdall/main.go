@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"heimdall/core"
+
 	"github.com/kelseyhightower/envconfig"
 
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/firestore"
-	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/iam"
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/serviceaccount"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -27,36 +29,49 @@ func init() {
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		pool, err := iam.GetWorkloadIdentityPool(ctx, env.WorkloadPool, pulumi.ID(env.WorkloadPool), nil)
-		if err != nil {
+		if err := core.WorkloadIdentityFederation(ctx, env.ProjectId, env.WorkloadPool, serviceName, githubIssuerUrl, env.Repository); err != nil {
 			return err
 		}
 
-		p, err := iam.NewWorkloadIdentityPoolProvider(ctx, serviceName, &iam.WorkloadIdentityPoolProviderArgs{
-			WorkloadIdentityPoolId:         pool.WorkloadIdentityPoolId,
-			WorkloadIdentityPoolProviderId: pulumi.String(serviceName),
-			AttributeMapping: pulumi.StringMap{
-				"google.subject":       pulumi.String("assertion.sub"),
-				"attribute.actor":      pulumi.String("assertion.actor"),
-				"attribute.repository": pulumi.String("assertion.repository"),
-			},
-			Project: pulumi.String(env.ProjectId),
-			Oidc: &iam.WorkloadIdentityPoolProviderOidcArgs{
-				IssuerUri: pulumi.String(githubIssuerUrl),
-			},
+		repository, err := core.Repository(ctx, serviceName, env.ProjectId, env.Region)
+		if err != nil {
+			return nil
+		}
+
+		cloudRunSA, err := serviceaccount.NewAccount(ctx, fmt.Sprintf("cloud-run-%s", serviceName), &serviceaccount.AccountArgs{
+			AccountId:   pulumi.Sprintf("cloud-run-%s", serviceName),
+			DisplayName: pulumi.Sprintf("Cloud run service account for %s", serviceName),
+			Project:     pulumi.String(env.ProjectId),
 		})
 		if err != nil {
 			return err
 		}
 
-		// Set the Workload provider to interact with the provider through our pulumi SA
-		if _, err := serviceaccount.NewIAMMember(ctx, "heimdall-workload-identity", &serviceaccount.IAMMemberArgs{
-			Member:           pulumi.Sprintf("principalSet://iam.googleapis.com/%s/attribute.repository/%s", pool.Name, env.Repository),
-			Role:             pulumi.String("roles/iam.workloadIdentityUser"),
-			ServiceAccountId: pulumi.Sprintf("projects/%s/serviceAccounts/pulumi@%s.iam.gserviceaccount.com", env.ProjectId, env.ProjectId),
-		}, pulumi.DependsOn([]pulumi.Resource{p})); err != nil {
+		if err := core.RepositoryPermissions(ctx, cloudRunSA, repository); err != nil {
 			return err
 		}
+
+		//_, err := cloudrun.NewService(ctx, serviceName, &cloudrun.ServiceArgs{
+		//	Location: pulumi.String(env.Region),
+		//	Template: &cloudrun.ServiceTemplateArgs{
+		//		Spec: &cloudrun.ServiceTemplateSpecArgs{
+		//			Containers: cloudrun.ServiceTemplateSpecContainerArray{
+		//				&cloudrun.ServiceTemplateSpecContainerArgs{
+		//					Image: pulumi.Sprintf("%s-docker.pkg.dev/%s/%s", env.Region, repository.Name, serviceName),
+		//				},
+		//			},
+		//		},
+		//	},
+		//	Traffics: cloudrun.ServiceTrafficArray{
+		//		&cloudrun.ServiceTrafficArgs{
+		//			LatestRevision: pulumi.Bool(true),
+		//			Percent:        pulumi.Int(100),
+		//		},
+		//	},
+		//})
+		//if err != nil {
+		//	return err
+		//}
 
 		database, err := firestore.NewDatabase(ctx, "heimdall", &firestore.DatabaseArgs{
 			AppEngineIntegrationMode: pulumi.String("DISABLED"),
@@ -71,7 +86,6 @@ func main() {
 		}
 
 		ctx.Export("firestore database", database.ID())
-		ctx.Export("workload-identity-pool-id:", p.ID())
 
 		return nil
 	})

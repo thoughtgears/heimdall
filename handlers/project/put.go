@@ -35,11 +35,11 @@ func Put(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 		}
 
 		for _, env := range data.Environments {
-			stackName, err := iac.Up(c, data, env, config)
+			stackName, err := iac.Run(c, data, env, config, false)
 			if err != nil {
-				log.Error().Err(err).Msg("error updating environment")
+				log.Error().Err(err).Msg("error updating environment stack")
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"message": fmt.Sprintf("error updating environment : %v", err),
+					"message": fmt.Sprintf("error updating environment stack : %v", err),
 				})
 				return
 			}

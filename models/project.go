@@ -9,7 +9,7 @@ type Project struct {
 	Name            string   `json:"name" firestore:"name"`
 	BillingAccount  string   `json:"billingAccount" firestore:"billingAccount"`
 	OrganizationId  string   `json:"organizationId" firestore:"organizationId"`
-	Repository      string   `json:"repository" firestore:"repository"`
+	Repositories    []string `json:"repositories" firestore:"repositories"`
 	RepositoryOwner string   `json:"repositoryOwner" firestore:"repositoryOwner"`
 	PulumiOwner     string   `json:"pulumiOwner" firestore:"pulumiOwner"`
 	StackName       string   `json:"stackName" firestore:"stackName"`

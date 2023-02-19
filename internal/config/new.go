@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Debug      bool   `envconfig:"DEBUG" default:"false"`
 	Port       int    `envconfig:"PORT" default:"8080"`
+	Region     string `envconfig:"REGION" default:"europe-west2"`
 	Project    string `envconfig:"PROJECT_ID" required:"true"`
 	Collection string `envconfig:"COLLECTION" default:"projects"`
 }

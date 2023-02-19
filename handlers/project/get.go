@@ -11,9 +11,9 @@ import (
 	"github.com/thoughtgears/heimdall/models"
 )
 
-func GetID(client *firestore.Client, config *config.Config) gin.HandlerFunc {
+func Get(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var project models.Project
+		var data models.Project
 		id := c.Param("id")
 
 		doc, err := client.Collection(config.Collection).Doc(id).Get(c)
@@ -25,7 +25,7 @@ func GetID(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		if err := doc.DataTo(&project); err != nil {
+		if err := doc.DataTo(&data); err != nil {
 			log.Error().Err(err).Msg("error binding document to struct")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("error binding document to struct : %v", err),
@@ -33,6 +33,6 @@ func GetID(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, project)
+		c.JSON(http.StatusOK, data)
 	}
 }

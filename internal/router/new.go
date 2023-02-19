@@ -28,7 +28,10 @@ func New(client *firestore.Client, config *config.Config) *gin.Engine {
 
 	// Project endpoints
 	v1.GET("/projects", project.GetAll(client, config))
-	v1.GET("/projects/:id", project.GetID(client, config))
+	v1.GET("/projects/:id", project.Get(client, config))
+	v1.POST("/projects", project.Post(client, config))
+	v1.PUT("/projects/:id")
+	v1.DELETE("/projects/:id", project.Delete(client, config))
 
 	// Service Catalogue endpoints
 	v1.GET("/catalogue", service_cataloge.Get(client))

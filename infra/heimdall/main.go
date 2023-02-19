@@ -3,11 +3,9 @@ package main
 import (
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/serviceaccount"
-
-	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/iam"
-
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/firestore"
+	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/iam"
+	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/serviceaccount"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 

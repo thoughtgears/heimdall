@@ -17,7 +17,7 @@ func Post(client *firestore.Client) gin.HandlerFunc {
 
 		if err := c.BindJSON(&data); err != nil {
 			log.Error().Err(err).Msg("error binding request body to struct")
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("error binding request body to struct : %v", err),
 			})
 			return

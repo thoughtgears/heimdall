@@ -15,7 +15,7 @@ import (
 
 func GetAll(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var resp []models.Project
+		var data []models.Project
 		iter := client.Collection(config.Collection).Documents(c)
 
 		defer iter.Stop()
@@ -40,9 +40,9 @@ func GetAll(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 				})
 				return
 			}
-			resp = append(resp, p)
+			data = append(data, p)
 		}
 
-		c.JSON(http.StatusOK, resp)
+		c.JSON(http.StatusOK, data)
 	}
 }

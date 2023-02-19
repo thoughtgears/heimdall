@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"github.com/thoughtgears/heimdall/handlers/stack_management"
+
 	"github.com/thoughtgears/heimdall/handlers/service_cataloge"
 
 	"cloud.google.com/go/firestore"
@@ -36,6 +38,9 @@ func New(client *firestore.Client, config *config.Config) *gin.Engine {
 	// Service Catalogue endpoints
 	v1.GET("/catalogue", service_cataloge.Get(client))
 	v1.POST("/catalogue", service_cataloge.Post(client))
+
+	// Stack management endpoints
+	v1.POST("/stacks/:id", stack_management.Up(client, config))
 
 	return r
 }

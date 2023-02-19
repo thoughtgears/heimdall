@@ -14,7 +14,7 @@ func Get(client *firestore.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var data models.ServiceCatalogue
 
-		doc, err := client.Collection("serviceCatalogue").Doc("catalogue").Get(c)
+		doc, err := client.Collection("pulumiData").Doc("serviceCatalogue").Get(c)
 		if err != nil {
 			log.Error().Err(err).Msg("error retrieving document from firestore")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{

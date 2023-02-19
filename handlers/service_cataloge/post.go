@@ -25,7 +25,7 @@ func Post(client *firestore.Client) gin.HandlerFunc {
 
 		data.LastUpdate = time.Now()
 
-		if _, err := client.Collection("serviceCatalogue").Doc("catalogue").Set(c, data); err != nil {
+		if _, err := client.Collection("pulumiData").Doc("serviceCatalogue").Set(c, data); err != nil {
 			log.Error().Err(err).Msg("error writing document to firestore")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("error writing document to firestore : %v", err),

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/thoughtgears/heimdall/internal/iac"
 
 	"cloud.google.com/go/firestore"
@@ -27,7 +30,14 @@ func Post(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 
 		id := models.GetProjectId(data.Name)
 
-		if _, err := client.Collection(config.Collection).Doc(id).Set(c, data); err != nil {
+		if _, err := client.Collection(config.Collection).Doc(id).Create(c, data); err != nil {
+			if status.Code(err) == codes.AlreadyExists {
+				log.Warn().Err(err).Msg("document already exists, use PUT to update document")
+				c.AbortWithStatusJSON(http.StatusPreconditionFailed, gin.H{
+					"message": "document already exists, use PUT to update document",
+				})
+				return
+			}
 			log.Error().Err(err).Msg("error updating document in collection")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("error updating document in collection : %v", err),
@@ -36,10 +46,23 @@ func Post(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 		}
 
 		for _, env := range data.Environments {
-			if err := iac.Up(c, data, env, config); err != nil {
+			stackName, err := iac.Up(c, data, env, config)
+			if err != nil {
 				log.Error().Err(err).Msg("error updating environment")
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"message": fmt.Sprintf("error updating environment : %v", err),
+				})
+				return
+			}
+
+			if _, err := client.Collection(config.Collection).Doc(id).Update(c, []firestore.Update{
+				{
+					Path:  "stackName",
+					Value: stackName,
+				}}); err != nil {
+				log.Error().Err(err).Msg("error updating document with stack name")
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": fmt.Sprintf("error updating document with stack name : %v", err),
 				})
 				return
 			}

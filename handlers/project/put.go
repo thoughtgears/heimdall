@@ -35,10 +35,23 @@ func Put(client *firestore.Client, config *config.Config) gin.HandlerFunc {
 		}
 
 		for _, env := range data.Environments {
-			if err := iac.Up(c, data, env, config); err != nil {
+			stackName, err := iac.Up(c, data, env, config)
+			if err != nil {
 				log.Error().Err(err).Msg("error updating environment")
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"message": fmt.Sprintf("error updating environment : %v", err),
+				})
+				return
+			}
+
+			if _, err := client.Collection(config.Collection).Doc(id).Update(c, []firestore.Update{
+				{
+					Path:  "stackName",
+					Value: stackName,
+				}}); err != nil {
+				log.Error().Err(err).Msg("error updating document with stack name")
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": fmt.Sprintf("error updating document with stack name : %v", err),
 				})
 				return
 			}

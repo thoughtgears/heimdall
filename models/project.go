@@ -6,13 +6,13 @@ import (
 )
 
 type Project struct {
-	Id              string   `json:"id" firestore:"id"`
 	Name            string   `json:"name" firestore:"name"`
 	BillingAccount  string   `json:"billingAccount" firestore:"billingAccount"`
 	OrganizationId  string   `json:"organizationId" firestore:"organizationId"`
 	Repository      string   `json:"repository" firestore:"repository"`
 	RepositoryOwner string   `json:"repositoryOwner" firestore:"repositoryOwner"`
 	PulumiOwner     string   `json:"pulumiOwner" firestore:"pulumiOwner"`
+	StackName       string   `json:"stackName" firestore:"stackName"`
 	Services        []string `json:"services" firestore:"services"`
 	Environments    []string `json:"environments,omitempty" firestore:"environments,omitempty"`
 }

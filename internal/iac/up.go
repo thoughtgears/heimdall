@@ -15,7 +15,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func Up(ctx context.Context, data models.Project, environment string, config *config.Config) error {
+func Up(ctx context.Context, data models.Project, environment string, config *config.Config) (string, error) {
 	deploy := func(ctx *pulumi.Context) error {
 		// Ensure you have a proper suffix ID at the end of creating a project
 		projectSuffix, err := random.NewRandomInteger(ctx, "project_suffix", &random.RandomIntegerArgs{
@@ -51,7 +51,7 @@ func Up(ctx context.Context, data models.Project, environment string, config *co
 	// for inline source programs, we must manage plugins ourselves
 	err = w.InstallPlugin(ctx, "gcp", "v6.50.0")
 	if err != nil {
-		return fmt.Errorf("failed to install gcp plugin : %v", err)
+		return "", fmt.Errorf("failed to install gcp plugin : %v", err)
 	}
 
 	// set stack configuration specifying the AWS region to deploy
@@ -59,22 +59,20 @@ func Up(ctx context.Context, data models.Project, environment string, config *co
 		"gcp:region":  auto.ConfigValue{Value: config.Region},
 		"gcp:project": auto.ConfigValue{Value: config.Project},
 	}); err != nil {
-		return fmt.Errorf("failed setting config : %v", err)
+		return "", fmt.Errorf("failed setting config : %v", err)
 	}
 
 	_, err = s.Refresh(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to refresh stack : %v", err)
+		return "", fmt.Errorf("failed to refresh stack : %v", err)
 	}
 
 	// wire up our update to stream progress to stdout
 	stdoutStreamer := optup.ProgressStreams(os.Stdout)
 
-	// run the update to deploy our s3 website
 	if _, err := s.Up(ctx, stdoutStreamer); err != nil {
-		return fmt.Errorf("failed to update stack : %v", err)
+		return "", fmt.Errorf("failed to update stack : %v", err)
 	}
-	fmt.Println("Update succeeded!")
 
-	return nil
+	return stackName, nil
 }
